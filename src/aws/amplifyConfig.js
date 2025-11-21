@@ -1,19 +1,10 @@
 import { Amplify } from "aws-amplify";
 
-// Validate required environment variables
-const requiredEnvVars = ['REACT_APP_USER_POOL_ID', 'REACT_APP_USER_POOL_CLIENT_ID', 'REACT_APP_API_ENDPOINT', 'REACT_APP_S3_BUCKET'];
-const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-if (missingVars.length > 0) {
-  console.warn(`Missing environment variables: ${missingVars.join(', ')}`);
-}
-
-// AWS Amplify Configuration with Environment Variables
-
 const awsConfig = {
   Auth: {
     Cognito: {
-      userPoolId: process.env.REACT_APP_USER_POOL_ID,
-      userPoolClientId: process.env.REACT_APP_USER_POOL_CLIENT_ID,
+      userPoolId: "us-east-1_7fvXVi5oM",
+      userPoolClientId: "16vaq7l91itotdblpngintd71n",
       signUpVerificationMethod: "code",
       loginWith: { 
         email: true 
@@ -24,27 +15,21 @@ const awsConfig = {
     endpoints: [
       {
         name: "ClinicaVoiceAPI",
-        endpoint: process.env.REACT_APP_API_ENDPOINT,
-        region: process.env.REACT_APP_AWS_REGION || "us-east-1",
+        endpoint: "https://r7le6kf535.execute-api.us-east-1.amazonaws.com",
+        region: "us-east-1",
       },
     ],
   },
   Storage: {
     S3: {
-      bucket: process.env.REACT_APP_S3_BUCKET,
-      region: process.env.REACT_APP_AWS_REGION || "us-east-1",
+      bucket: "terraform-20251121023049872500000001",
+      region: "us-east-1",
     },
   },
 };
 
-try {
-  Amplify.configure(awsConfig);
-} catch (error) {
-  console.error('Failed to configure Amplify:', error);
-}
+Amplify.configure(awsConfig);
 
-if (process.env.NODE_ENV === 'development') {
-  console.log('Amplify configured successfully');
-}
+
 
 export default awsConfig;
