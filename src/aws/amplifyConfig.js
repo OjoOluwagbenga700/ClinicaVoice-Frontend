@@ -2,14 +2,14 @@ import { Amplify } from "aws-amplify";
 
 const awsConfig = {
   Auth: {
-    // Standard Amplify Auth configuration keys
-    region: "us-east-1",
-    userPoolId: "us-east-1_23cH8bX6E",
-    userPoolWebClientId: "7hn7q4dffj72k97der2lqe37is",
-    identityPoolId: "us-east-1:your-identity-pool-id",
-    // Optional settings you can enable/adjust
-    authenticationFlowType: "USER_PASSWORD_AUTH",
-    // If you want email based signIn, set this in your app logic rather than here
+    Cognito: {
+      userPoolId: "us-east-1_23cH8bX6E",
+      userPoolClientId: "7hn7q4dffj72k97der2lqe37is",
+      signUpVerificationMethod: "code",
+      loginWith: { 
+        email: true 
+      },
+    },
   },
   API: {
     endpoints: [
@@ -28,8 +28,10 @@ const awsConfig = {
   },
 };
 
-Amplify.configure(awsConfig);
-
-
+try {
+  Amplify.configure(awsConfig);
+} catch (error) {
+  console.error('Amplify configuration failed:', error);
+}
 
 export default awsConfig;
