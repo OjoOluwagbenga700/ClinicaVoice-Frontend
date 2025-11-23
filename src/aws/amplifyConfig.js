@@ -4,8 +4,8 @@ import { Amplify } from "aws-amplify";
 const awsConfig = {
   Auth: {
     Cognito: {
-      userPoolId: "us-east-1_7fvXVi5oM",
-      userPoolClientId: "2o666u62o03djnouag1fsu8hi1", 
+      userPoolId: "YOUR_ACTUAL_USER_POOL_ID",
+      userPoolClientId: "YOUR_ACTUAL_CLIENT_ID", 
       signUpVerificationMethod: "code",
       loginWith: { 
         email: true 
