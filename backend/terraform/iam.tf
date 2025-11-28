@@ -182,9 +182,22 @@ resource "aws_iam_role_policy" "authenticated_user_s3" {
         Action = [
           "s3:PutObject",
           "s3:PutObjectAcl",
-          "s3:GetObject"
+          "s3:GetObject",
+          "s3:DeleteObject"
         ]
-        Resource = "${aws_s3_bucket.main.arn}/audio/$${cognito-identity.amazonaws.com:sub}/*"
+        Resource = "${aws_s3_bucket.main.arn}/audio/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket"
+        ]
+        Resource = aws_s3_bucket.main.arn
+        Condition = {
+          StringLike = {
+            "s3:prefix" = "audio/*"
+          }
+        }
       }
     ]
   })
