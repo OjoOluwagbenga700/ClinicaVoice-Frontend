@@ -68,3 +68,9 @@ output "frontend_config" {
     aws_region                  = var.aws_region
   }
 }
+
+# Cognito Identity Pool Output
+output "cognito_identity_pool_id" {
+  description = "Cognito Identity Pool ID for S3 uploads"
+  value       = aws_cognito_identity_pool.main.id
+}

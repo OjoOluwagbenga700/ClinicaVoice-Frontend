@@ -110,3 +110,28 @@ resource "random_string" "cognito_domain_suffix" {
   special = false
   upper   = false
 }
+
+# Cognito Identity Pool for S3 uploads
+resource "aws_cognito_identity_pool" "main" {
+  identity_pool_name               = "${var.project_name}-identity-pool-${var.environment}"
+  allow_unauthenticated_identities = false
+
+  cognito_identity_providers {
+    client_id               = aws_cognito_user_pool_client.main.id
+    provider_name           = aws_cognito_user_pool.main.endpoint
+    server_side_token_check = false
+  }
+
+  tags = {
+    Name = "${var.project_name}-identity-pool"
+  }
+}
+
+# Attach authenticated role to identity pool
+resource "aws_cognito_identity_pool_roles_attachment" "main" {
+  identity_pool_id = aws_cognito_identity_pool.main.id
+
+  roles = {
+    "authenticated" = aws_iam_role.authenticated_user.arn
+  }
+}

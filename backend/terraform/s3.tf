@@ -96,3 +96,40 @@ resource "aws_s3_bucket_lifecycle_configuration" "main" {
     }
   }
 }
+
+# S3 Bucket Policy for authenticated uploads
+resource "aws_s3_bucket_policy" "main" {
+  bucket = aws_s3_bucket.main.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowAuthenticatedUploads"
+        Effect = "Allow"
+        Principal = {
+          AWS = aws_iam_role.authenticated_user.arn
+        }
+        Action = [
+          "s3:PutObject",
+          "s3:PutObjectAcl",
+          "s3:GetObject"
+        ]
+        Resource = "${aws_s3_bucket.main.arn}/audio/*"
+      },
+      {
+        Sid    = "AllowLambdaAccess"
+        Effect = "Allow"
+        Principal = {
+          AWS = aws_iam_role.lambda_execution.arn
+        }
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+        Resource = "${aws_s3_bucket.main.arn}/*"
+      }
+    ]
+  })
+}

@@ -6,6 +6,7 @@ const awsConfig = {
     Cognito: {
       userPoolId: "us-east-1_Kwelk23z7",
       userPoolClientId: "1n6llna74l8e28b57kpinaqtbe",
+      identityPoolId: "us-east-1:f2644340-5b75-4422-9540-8c6970afabea",
     },
   },
   API: {
@@ -26,6 +27,6 @@ const awsConfig = {
 
 Amplify.configure(awsConfig);
 
-console.log("✅ Real Amplify configured successfully");
+console.log("✅ Real Amplify configured successfully with S3 upload support");
 
 export default awsConfig;
