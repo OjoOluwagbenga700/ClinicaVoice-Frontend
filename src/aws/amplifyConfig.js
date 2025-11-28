@@ -4,30 +4,25 @@ import { Amplify } from "aws-amplify";
 const awsConfig = {
   Auth: {
     Cognito: {
-      userPoolId: "us-east-1_7fvXVi5oM",
-      userPoolClientId: "16vaq7l91itotdblpngintd71n", 
-      signUpVerificationMethod: "code",
-      loginWith: { 
-        email: true 
-      },
+      userPoolId: "us-east-1_Kwelk23z7",
+      userPoolClientId: "1n6llna74l8e28b57kpinaqtbe",
     },
   },
   API: {
-    endpoints: [
-      {
-        name: "ClinicaVoiceAPI",
-        endpoint: "https://r7le6kf535.execute-api.us-east-1.amazonaws.com",
-        region: "us-east-1",
-      },
-    ],
+    endpoints: [{
+      name: "ClinicaVoiceAPI",
+      endpoint: "https://f8ei30p416.execute-api.us-east-1.amazonaws.com/prod",
+      region: "us-east-1",
+    }],
   },
   Storage: {
     S3: {
-      bucket: "terraform-20251121023049872500000001",
+      bucket: "clinicavoice-storage-prod-q69z3e2c",
       region: "us-east-1",
     },
   },
 };
+
 
 Amplify.configure(awsConfig);
 

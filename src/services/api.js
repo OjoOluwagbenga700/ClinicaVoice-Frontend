@@ -116,7 +116,7 @@ export async function apiDelete(path) {
 }
 
 // Mock implementation for development - will be replaced with real API calls
-const USE_MOCK_API = true;
+const USE_MOCK_API = false;
 
 // Import mock functions
 import { 
