@@ -72,16 +72,26 @@ resource "aws_cognito_user_pool_client" "main" {
   allowed_oauth_flows                  = ["code", "implicit"]
   allowed_oauth_scopes                 = ["email", "openid", "profile"]
 
-  # Callback URLs (update after Amplify deployment)
-  callback_urls = [
+  # Callback URLs - handle wildcard for initial deployment
+  callback_urls = var.frontend_domain == "*" ? [
     "http://localhost:5173",
-    "https://${var.frontend_domain}"
-  ]
+    "https://localhost:5173"
+  ] : (var.environment == "prod" ? [
+    var.frontend_domain
+  ] : [
+    "http://localhost:5173",
+    var.frontend_domain
+  ])
 
-  logout_urls = [
+  logout_urls = var.frontend_domain == "*" ? [
     "http://localhost:5173",
-    "https://${var.frontend_domain}"
-  ]
+    "https://localhost:5173"
+  ] : (var.environment == "prod" ? [
+    var.frontend_domain
+  ] : [
+    "http://localhost:5173", 
+    var.frontend_domain
+  ])
 
   # Explicit auth flows
   explicit_auth_flows = [

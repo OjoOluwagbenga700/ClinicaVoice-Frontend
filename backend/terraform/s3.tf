@@ -51,9 +51,11 @@ resource "aws_s3_bucket_cors_configuration" "main" {
   cors_rule {
     allowed_headers = ["*"]
     allowed_methods = ["GET", "PUT", "POST", "DELETE", "HEAD"]
-    allowed_origins = [
+    allowed_origins = var.environment == "prod" ? [
+      var.frontend_domain
+    ] : [
       "http://localhost:5173",
-      "https://${var.frontend_domain}"
+      var.frontend_domain
     ]
     expose_headers  = ["ETag"]
     max_age_seconds = 3000
@@ -65,11 +67,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "main" {
   bucket = aws_s3_bucket.main.id
 
   rule {
-    id     = "delete-old-transcriptions"
+    id     = "delete-old-transcripts"
     status = "Enabled"
 
     filter {
-      prefix = "transcriptions/"
+      prefix = "transcripts/"
     }
 
     expiration {
@@ -95,6 +97,50 @@ resource "aws_s3_bucket_lifecycle_configuration" "main" {
       storage_class = "GLACIER"
     }
   }
+}
+
+# S3 Event Notifications for Lambda triggers
+resource "aws_s3_bucket_notification" "lambda_triggers" {
+  bucket = aws_s3_bucket.main.id
+
+  # Trigger transcribe-processor when audio files are uploaded
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.functions["transcribe-processor"].arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "audio/"
+    filter_suffix       = ""
+  }
+
+  # Trigger comprehend-medical when transcription JSON is created
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.functions["comprehend-medical"].arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "transcripts/"
+    filter_suffix       = ".json"
+  }
+
+  depends_on = [
+    aws_lambda_permission.s3_invoke_transcribe_processor,
+    aws_lambda_permission.s3_invoke_comprehend_medical
+  ]
+}
+
+# Lambda permission for S3 to invoke transcribe-processor
+resource "aws_lambda_permission" "s3_invoke_transcribe_processor" {
+  statement_id  = "AllowS3InvokeTranscribeProcessor"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.functions["transcribe-processor"].function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.main.arn
+}
+
+# Lambda permission for S3 to invoke comprehend-medical
+resource "aws_lambda_permission" "s3_invoke_comprehend_medical" {
+  statement_id  = "AllowS3InvokeComprehendMedical"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.functions["comprehend-medical"].function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.main.arn
 }
 
 # S3 Bucket Policy for authenticated uploads

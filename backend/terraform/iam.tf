@@ -48,9 +48,7 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
           aws_dynamodb_table.reports.arn,
           "${aws_dynamodb_table.reports.arn}/index/*",
           aws_dynamodb_table.templates.arn,
-          "${aws_dynamodb_table.templates.arn}/index/*",
-          aws_dynamodb_table.transcriptions.arn,
-          "${aws_dynamodb_table.transcriptions.arn}/index/*"
+          "${aws_dynamodb_table.templates.arn}/index/*"
         ]
       }
     ]
@@ -69,17 +67,9 @@ resource "aws_iam_role_policy" "lambda_s3" {
         Effect = "Allow"
         Action = [
           "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject"
+          "s3:PutObject"
         ]
         Resource = "${aws_s3_bucket.main.arn}/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket"
-        ]
-        Resource = aws_s3_bucket.main.arn
       }
     ]
   })
@@ -96,9 +86,7 @@ resource "aws_iam_role_policy" "lambda_transcribe" {
       {
         Effect = "Allow"
         Action = [
-          "transcribe:StartTranscriptionJob",
-          "transcribe:GetTranscriptionJob",
-          "transcribe:ListTranscriptionJobs"
+          "transcribe:StartTranscriptionJob"
         ]
         Resource = "*"
       }
@@ -202,3 +190,23 @@ resource "aws_iam_role_policy" "authenticated_user_s3" {
     ]
   })
 }
+# Comprehend Medical Access Policy for Lambda
+resource "aws_iam_role_policy" "lambda_comprehend_medical" {
+  name = "${var.project_name}-lambda-comprehend-medical-${var.environment}"
+  role = aws_iam_role.lambda_execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "comprehendmedical:DetectEntitiesV2",
+          "comprehendmedical:DetectPHI"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+

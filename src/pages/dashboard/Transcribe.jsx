@@ -15,8 +15,7 @@ import StopIcon from "@mui/icons-material/Stop";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import SaveIcon from "@mui/icons-material/Save";
 import { useTranslation } from "react-i18next";
-import { uploadData } from "aws-amplify/storage";
-import { post } from "aws-amplify/api";
+import { uploadFile, checkTranscriptionStatus } from "../../services/uploadService";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useUserRole } from "../../hooks/useUserRole";
 
@@ -162,40 +161,63 @@ export default function Transcribe() {
 
     setLoading(true);
     setError("");
-    setStatusMessage(t("transcribing"));
+    setStatusMessage("Uploading file...");
 
     try {
-      // Step 1️⃣ Upload file to S3
-      const uploadResult = await uploadData({
-        key: `audio/${Date.now()}_${audioFile.name}`,
-        data: audioFile,
-        options: { contentType: audioFile.type },
-      }).result;
+      // Step 1️⃣ Upload file using presigned URL
+      const uploadResult = await uploadFile(audioFile, (progress) => {
+        setStatusMessage(`Uploading... ${Math.round(progress)}%`);
+      });
 
-      // Step 2️⃣ Trigger transcription through API Gateway
-      const response = await post({
-        apiName: "ClinicaVoiceAPI",
-        path: "/transcribe",
-        options: { body: { fileKey: uploadResult.key } },
-      }).response;
-
-      const data = await response.body.json();
-      setTranscript(data.transcript || "Transcription completed successfully.");
-      setStatusMessage(t("transcript_saved"));
-      setError("");
+      setStatusMessage("File uploaded successfully. Transcription starting...");
+      
+      // Step 2️⃣ Poll for transcription completion
+      let attempts = 0;
+      const maxAttempts = 60; // 5 minutes with 5-second intervals
+      let transcriptionData = null;
+      
+      while (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+        attempts++;
+        
+        try {
+          transcriptionData = await checkTranscriptionStatus(uploadResult.fileId);
+          
+          if (transcriptionData.status === 'completed') {
+            setTranscript(transcriptionData.transcript || "Transcription completed successfully.");
+            setStatusMessage("Transcription completed!");
+            setError("");
+            break;
+          } else if (transcriptionData.status === 'failed') {
+            throw new Error('Transcription job failed');
+          } else {
+            setStatusMessage(`Transcribing... (${attempts * 5}s)`);
+          }
+        } catch (statusError) {
+          if (attempts >= maxAttempts) {
+            throw statusError;
+          }
+          // Continue polling if it's just a temporary error
+        }
+      }
+      
+      if (attempts >= maxAttempts && (!transcriptionData || transcriptionData.status !== 'completed')) {
+        throw new Error('Transcription timeout - please check back later');
+      }
+      
     } catch (error) {
       console.error("Transcription failed:", error);
       // Enhanced transcription error handling with retry option (Requirement 5.5)
       if (error.name === 'NetworkError' || error.message?.includes('network')) {
         setError("Network error occurred. Please check your connection and try again.");
-      } else if (error.response?.status === 413) {
+      } else if (error.message?.includes('File too large')) {
         setError("File is too large to process. Please use a smaller audio file.");
-      } else if (error.response?.status === 415) {
+      } else if (error.message?.includes('Invalid file type')) {
         setError("Audio format not supported. Please use a different file format.");
-      } else if (error.response?.status === 504 || error.message?.includes('timeout')) {
-        setError("Transcription timed out. The file may be too long. Please try a shorter recording.");
+      } else if (error.message?.includes('timeout')) {
+        setError("Transcription is taking longer than expected. Please check back later or try a shorter recording.");
       } else {
-        setError("Transcription failed. Please try again or contact support if the problem persists.");
+        setError(error.message || "Transcription failed. Please try again or contact support if the problem persists.");
       }
       setStatusMessage("");
     } finally {

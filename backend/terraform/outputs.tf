@@ -52,10 +52,7 @@ output "templates_table_name" {
   value       = aws_dynamodb_table.templates.name
 }
 
-output "transcriptions_table_name" {
-  description = "DynamoDB Transcriptions Table Name"
-  value       = aws_dynamodb_table.transcriptions.name
-}
+
 
 # Frontend Configuration
 output "frontend_config" {

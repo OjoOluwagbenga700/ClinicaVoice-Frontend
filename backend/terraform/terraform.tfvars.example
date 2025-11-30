@@ -1,0 +1,13 @@
+# Production Configuration
+project_name = "clinicavoice"
+environment = "prod"
+aws_region = "us-east-1"
+
+# Frontend domain - using wildcard for simplicity
+# You can restrict this later to your specific Amplify domain for better security
+frontend_domain = "*"
+
+# Optional: Customize other settings
+log_retention_days = 30
+enable_deletion_protection = true
+backup_retention_days = 30

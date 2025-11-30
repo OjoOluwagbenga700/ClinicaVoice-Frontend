@@ -1,28 +1,7 @@
 # Lambda Functions Configuration
 locals {
   lambda_functions = {
-    dashboard-stats = {
-      handler     = "index.handler"
-      runtime     = "nodejs20.x"
-      timeout     = 30
-      memory_size = 256
-      environment_variables = {
-        REPORTS_TABLE        = aws_dynamodb_table.reports.name
-        TRANSCRIPTIONS_TABLE = aws_dynamodb_table.transcriptions.name
-        ENVIRONMENT          = var.environment
-      }
-    }
-    dashboard-activity = {
-      handler     = "index.handler"
-      runtime     = "nodejs20.x"
-      timeout     = 30
-      memory_size = 256
-      environment_variables = {
-        REPORTS_TABLE = aws_dynamodb_table.reports.name
-        ENVIRONMENT   = var.environment
-      }
-    }
-    dashboard-recent-notes = {
+    dashboard = {
       handler     = "index.handler"
       runtime     = "nodejs20.x"
       timeout     = 30
@@ -55,12 +34,44 @@ locals {
     transcribe = {
       handler     = "index.handler"
       runtime     = "nodejs20.x"
+      timeout     = 30
+      memory_size = 256
+      environment_variables = {
+        REPORTS_TABLE = aws_dynamodb_table.reports.name
+        S3_BUCKET     = aws_s3_bucket.main.id
+        ENVIRONMENT   = var.environment
+      }
+    }
+    upload = {
+      handler     = "index.handler"
+      runtime     = "nodejs20.x"
+      timeout     = 30
+      memory_size = 256
+      environment_variables = {
+        REPORTS_TABLE = aws_dynamodb_table.reports.name
+        S3_BUCKET     = aws_s3_bucket.main.id
+        ENVIRONMENT   = var.environment
+      }
+    }
+    transcribe-processor = {
+      handler     = "index.handler"
+      runtime     = "nodejs20.x"
       timeout     = 900  # 15 minutes for transcription
       memory_size = 1024
       environment_variables = {
-        TRANSCRIPTIONS_TABLE = aws_dynamodb_table.transcriptions.name
-        S3_BUCKET           = aws_s3_bucket.main.id
-        ENVIRONMENT         = var.environment
+        REPORTS_TABLE = aws_dynamodb_table.reports.name
+        S3_BUCKET     = aws_s3_bucket.main.id
+        ENVIRONMENT   = var.environment
+      }
+    }
+    comprehend-medical = {
+      handler     = "index.handler"
+      runtime     = "nodejs20.x"
+      timeout     = 300  # 5 minutes for medical analysis
+      memory_size = 512
+      environment_variables = {
+        REPORTS_TABLE = aws_dynamodb_table.reports.name
+        ENVIRONMENT   = var.environment
       }
     }
   }
@@ -100,9 +111,20 @@ resource "aws_lambda_function" "functions" {
   }
 }
 
-# Lambda Permissions for API Gateway
+# Lambda Functions that are called via API Gateway
+locals {
+  api_lambda_functions = {
+    dashboard = local.lambda_functions.dashboard
+    reports   = local.lambda_functions.reports
+    templates = local.lambda_functions.templates
+    transcribe = local.lambda_functions.transcribe
+    upload    = local.lambda_functions.upload
+  }
+}
+
+# Lambda Permissions for API Gateway (only for functions that need it)
 resource "aws_lambda_permission" "api_gateway_invoke" {
-  for_each = local.lambda_functions
+  for_each = local.api_lambda_functions
   
   statement_id  = "AllowAPIGatewayInvoke-${each.key}"
   action        = "lambda:InvokeFunction"

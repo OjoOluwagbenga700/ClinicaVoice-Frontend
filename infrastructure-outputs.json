@@ -1,0 +1,149 @@
+{
+  "api_gateway_endpoint": {
+    "sensitive": false,
+    "type": "string",
+    "value": "https://i58fqe2yx7.execute-api.us-east-1.amazonaws.com/prod"
+  },
+  "api_gateway_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "i58fqe2yx7"
+  },
+  "api_gateway_url": {
+    "sensitive": false,
+    "type": "string",
+    "value": "https://i58fqe2yx7.execute-api.us-east-1.amazonaws.com/prod"
+  },
+  "cognito_identity_pool_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "us-east-1:665205dc-51d8-47f0-8b1c-4ecc6ccdc557"
+  },
+  "cognito_user_pool_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:cognito-idp:us-east-1:969446871231:userpool/us-east-1_9BXZg2ivO"
+  },
+  "cognito_user_pool_client_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "77nq8slgt6co96epmlh56s1cjq"
+  },
+  "cognito_user_pool_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "us-east-1_9BXZg2ivO"
+  },
+  "frontend_config": {
+    "sensitive": false,
+    "type": [
+      "object",
+      {
+        "api_gateway_endpoint": "string",
+        "aws_region": "string",
+        "cognito_user_pool_client_id": "string",
+        "cognito_user_pool_id": "string",
+        "s3_bucket_name": "string"
+      }
+    ],
+    "value": {
+      "api_gateway_endpoint": "https://i58fqe2yx7.execute-api.us-east-1.amazonaws.com/prod",
+      "aws_region": "us-east-1",
+      "cognito_user_pool_client_id": "77nq8slgt6co96epmlh56s1cjq",
+      "cognito_user_pool_id": "us-east-1_9BXZg2ivO",
+      "s3_bucket_name": "clinicavoice-storage-prod-scz426fh"
+    }
+  },
+  "lambda_function_arns": {
+    "sensitive": false,
+    "type": [
+      "object",
+      {
+        "comprehend-medical": "string",
+        "dashboard": "string",
+        "reports": "string",
+        "templates": "string",
+        "transcribe": "string",
+        "transcribe-processor": "string",
+        "upload": "string"
+      }
+    ],
+    "value": {
+      "comprehend-medical": "arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-comprehend-medical-prod",
+      "dashboard": "arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-dashboard-prod",
+      "reports": "arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-reports-prod",
+      "templates": "arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-templates-prod",
+      "transcribe": "arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-transcribe-prod",
+      "transcribe-processor": "arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-transcribe-processor-prod",
+      "upload": "arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-upload-prod"
+    }
+  },
+  "lambda_function_invoke_arns": {
+    "sensitive": false,
+    "type": [
+      "object",
+      {
+        "comprehend-medical": "string",
+        "dashboard": "string",
+        "reports": "string",
+        "templates": "string",
+        "transcribe": "string",
+        "transcribe-processor": "string",
+        "upload": "string"
+      }
+    ],
+    "value": {
+      "comprehend-medical": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-comprehend-medical-prod/invocations",
+      "dashboard": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-dashboard-prod/invocations",
+      "reports": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-reports-prod/invocations",
+      "templates": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-templates-prod/invocations",
+      "transcribe": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-transcribe-prod/invocations",
+      "transcribe-processor": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-transcribe-processor-prod/invocations",
+      "upload": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:969446871231:function:clinicavoice-upload-prod/invocations"
+    }
+  },
+  "lambda_function_names": {
+    "sensitive": false,
+    "type": [
+      "object",
+      {
+        "comprehend-medical": "string",
+        "dashboard": "string",
+        "reports": "string",
+        "templates": "string",
+        "transcribe": "string",
+        "transcribe-processor": "string",
+        "upload": "string"
+      }
+    ],
+    "value": {
+      "comprehend-medical": "clinicavoice-comprehend-medical-prod",
+      "dashboard": "clinicavoice-dashboard-prod",
+      "reports": "clinicavoice-reports-prod",
+      "templates": "clinicavoice-templates-prod",
+      "transcribe": "clinicavoice-transcribe-prod",
+      "transcribe-processor": "clinicavoice-transcribe-processor-prod",
+      "upload": "clinicavoice-upload-prod"
+    }
+  },
+  "reports_table_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "clinicavoice-reports-prod"
+  },
+  "s3_bucket_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:s3:::clinicavoice-storage-prod-scz426fh"
+  },
+  "s3_bucket_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "clinicavoice-storage-prod-scz426fh"
+  },
+  "templates_table_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "clinicavoice-templates-prod"
+  }
+}

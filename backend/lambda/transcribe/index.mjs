@@ -1,9 +1,6 @@
-import { TranscribeClient, StartTranscriptionJobCommand, GetTranscriptionJobCommand } from '@aws-sdk/client-transcribe';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
-import { randomUUID } from 'crypto';
+import { DynamoDBDocumentClient, QueryCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 
-const transcribeClient = new TranscribeClient({ region: process.env.AWS_REGION || 'us-east-1' });
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
@@ -16,97 +13,81 @@ export const handler = async (event) => {
       return {
         statusCode: 403,
         headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Only clinicians can transcribe audio' })
+        body: JSON.stringify({ error: 'Only clinicians can access transcriptions' })
       };
     }
     
-    const { fileKey } = JSON.parse(event.body);
+    const method = event.requestContext.http.method;
+    const pathParameters = event.pathParameters || {};
     
-    // Determine media format from file extension
-    const extension = fileKey.split('.').pop().toLowerCase();
-    const formatMap = {
-      'webm': 'webm',
-      'mp3': 'mp3',
-      'mp4': 'mp4',
-      'm4a': 'mp4',
-      'wav': 'wav'
-    };
-    const mediaFormat = formatMap[extension] || 'webm';
-    
-    // Start transcription job
-    const jobName = `transcription-${Date.now()}-${randomUUID()}`;
-    const startCommand = new StartTranscriptionJobCommand({
-      TranscriptionJobName: jobName,
-      LanguageCode: 'en-US',
-      MediaFormat: mediaFormat,
-      Media: {
-        MediaFileUri: `s3://${process.env.S3_BUCKET}/${fileKey}`
-      },
-      OutputBucketName: process.env.S3_BUCKET,
-      OutputKey: `transcripts/${jobName}.json`
-    });
-    
-    await transcribeClient.send(startCommand);
-    
-    // Poll for completion (max 5 minutes)
-    let jobStatus = 'IN_PROGRESS';
-    let transcript = '';
-    let attempts = 0;
-    const maxAttempts = 150; // 5 minutes with 2-second intervals
-    
-    while (jobStatus === 'IN_PROGRESS' && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      attempts++;
-      
-      const getCommand = new GetTranscriptionJobCommand({
-        TranscriptionJobName: jobName
+    // GET /transcribe - List user's transcriptions
+    if (method === 'GET' && !pathParameters.id) {
+      const command = new QueryCommand({
+        TableName: process.env.REPORTS_TABLE,
+        IndexName: 'TypeIndex',
+        KeyConditionExpression: '#type = :type AND userId = :userId',
+        ExpressionAttributeNames: { '#type': 'type' },
+        ExpressionAttributeValues: { 
+          ':type': 'transcription',
+          ':userId': userId 
+        },
+        ScanIndexForward: false // Most recent first
       });
       
-      const response = await transcribeClient.send(getCommand);
-      jobStatus = response.TranscriptionJob.TranscriptionJobStatus;
+      const result = await docClient.send(command);
+      return {
+        statusCode: 200,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify(result.Items || [])
+      };
+    }
+    
+    // GET /transcribe/{id} - Get specific transcription
+    if (method === 'GET' && pathParameters.id) {
+      const command = new GetCommand({
+        TableName: process.env.REPORTS_TABLE,
+        Key: { id: pathParameters.id, userId: userId }
+      });
       
-      if (jobStatus === 'COMPLETED') {
-        const transcriptUri = response.TranscriptionJob.Transcript.TranscriptFileUri;
-        const transcriptResponse = await fetch(transcriptUri);
-        const transcriptData = await transcriptResponse.json();
-        transcript = transcriptData.results.transcripts[0].transcript;
-      } else if (jobStatus === 'FAILED') {
-        throw new Error('Transcription job failed');
+      const result = await docClient.send(command);
+      if (!result.Item || result.Item.type !== 'transcription') {
+        return {
+          statusCode: 404,
+          headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'Transcription not found' })
+        };
       }
+      
+      return {
+        statusCode: 200,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify(result.Item)
+      };
     }
     
-    if (jobStatus === 'IN_PROGRESS') {
-      throw new Error('Transcription timeout');
+    // POST /transcribe - Start transcription (now just returns upload URL)
+    if (method === 'POST') {
+      return {
+        statusCode: 200,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: 'Upload your file to S3. Transcription will start automatically.',
+          status: 'upload_ready'
+        })
+      };
     }
-    
-    // Save to DynamoDB
-    const transcriptionRecord = {
-      id: randomUUID(),
-      userId,
-      fileKey,
-      transcript,
-      jobName,
-      createdAt: new Date().toISOString()
-    };
-    
-    const putCommand = new PutCommand({
-      TableName: process.env.TRANSCRIPTIONS_TABLE,
-      Item: transcriptionRecord
-    });
-    
-    await docClient.send(putCommand);
     
     return {
-      statusCode: 200,
+      statusCode: 400,
       headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transcript, id: transcriptionRecord.id })
+      body: JSON.stringify({ error: 'Invalid request' })
     };
   } catch (error) {
     console.error('Error:', error);
     return {
       statusCode: 500,
       headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: error.message || 'Transcription failed' })
+      body: JSON.stringify({ error: error.message || 'Server error' })
     };
   }
 };

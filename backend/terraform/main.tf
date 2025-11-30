@@ -1,6 +1,15 @@
 terraform {
   required_version = ">= 1.0"
 
+  # PRODUCTION: Configure remote state backend
+  # backend "s3" {
+  #   bucket         = "your-terraform-state-bucket"
+  #   key            = "clinicavoice/terraform.tfstate"
+  #   region         = "us-east-1"
+  #   encrypt        = true
+  #   dynamodb_table = "terraform-state-lock"
+  # }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"

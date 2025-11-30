@@ -11,7 +11,11 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --run --coverage",
-    "test:properties": "vitest --run src/__tests__/properties"
+    "test:properties": "vitest --run src/__tests__/properties",
+    "security:validate": "./validate-security.sh",
+    "deploy": "./deploy.sh",
+    "deploy:get-env": "./get-amplify-env-vars.sh",
+    "build:prod": "NODE_ENV=production npm run build"
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.13.1",

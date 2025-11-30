@@ -2,22 +2,22 @@
 locals {
   # Define API routes with their configurations
   api_routes = {
-    # Dashboard endpoints
+    # Dashboard endpoints (unified function)
     "dashboard/stats" = {
       http_method     = "GET"
-      lambda_function = "dashboard-stats"
+      lambda_function = "dashboard"
       authorization   = "COGNITO_USER_POOLS"
       require_api_key = false
     }
     "dashboard/activity" = {
       http_method     = "GET"
-      lambda_function = "dashboard-activity"
+      lambda_function = "dashboard"
       authorization   = "COGNITO_USER_POOLS"
       require_api_key = false
     }
     "dashboard/recent-notes" = {
       http_method     = "GET"
-      lambda_function = "dashboard-recent-notes"
+      lambda_function = "dashboard"
       authorization   = "COGNITO_USER_POOLS"
       require_api_key = false
     }
@@ -92,10 +92,31 @@ locals {
       require_api_key = false
     }
 
-    # Transcribe endpoint
+    # Transcribe endpoints
     "transcribe" = {
+      http_method     = "GET"
+      lambda_function = "transcribe"
+      authorization   = "COGNITO_USER_POOLS"
+      require_api_key = false
+    }
+    "transcribe-post" = {
+      path            = "transcribe"
       http_method     = "POST"
       lambda_function = "transcribe"
+      authorization   = "COGNITO_USER_POOLS"
+      require_api_key = false
+    }
+    "transcribe/{id}" = {
+      http_method     = "GET"
+      lambda_function = "transcribe"
+      authorization   = "COGNITO_USER_POOLS"
+      require_api_key = false
+    }
+    
+    # Upload endpoint for presigned URLs
+    "upload/presign" = {
+      http_method     = "POST"
+      lambda_function = "upload"
       authorization   = "COGNITO_USER_POOLS"
       require_api_key = false
     }
@@ -151,6 +172,18 @@ resource "aws_api_gateway_resource" "transcribe" {
   path_part   = "transcribe"
 }
 
+resource "aws_api_gateway_resource" "upload" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_rest_api.main.root_resource_id
+  path_part   = "upload"
+}
+
+resource "aws_api_gateway_resource" "upload_presign" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.upload.id
+  path_part   = "presign"
+}
+
 # Create child resources under dashboard
 resource "aws_api_gateway_resource" "dashboard_stats" {
   rest_api_id = aws_api_gateway_rest_api.main.id
@@ -183,6 +216,12 @@ resource "aws_api_gateway_resource" "templates_id" {
   path_part   = "{id}"
 }
 
+resource "aws_api_gateway_resource" "transcribe_id" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.transcribe.id
+  path_part   = "{id}"
+}
+
 # Map route keys to resource IDs
 locals {
   route_to_resource = {
@@ -200,6 +239,9 @@ locals {
     "templates/{id}-put"     = aws_api_gateway_resource.templates_id.id
     "templates/{id}-delete"  = aws_api_gateway_resource.templates_id.id
     "transcribe"             = aws_api_gateway_resource.transcribe.id
+    "transcribe-post"        = aws_api_gateway_resource.transcribe.id
+    "transcribe/{id}"        = aws_api_gateway_resource.transcribe_id.id
+    "upload/presign"         = aws_api_gateway_resource.upload_presign.id
   }
 }
 
@@ -230,6 +272,9 @@ locals {
     "templates"              = aws_api_gateway_resource.templates.id
     "templates-id"           = aws_api_gateway_resource.templates_id.id
     "transcribe"             = aws_api_gateway_resource.transcribe.id
+    "transcribe-id"          = aws_api_gateway_resource.transcribe_id.id
+    "upload"                 = aws_api_gateway_resource.upload.id
+    "upload-presign"         = aws_api_gateway_resource.upload_presign.id
   }
 }
 
