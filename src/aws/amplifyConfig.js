@@ -40,11 +40,12 @@ const getAwsConfig = () => {
       },
     },
     API: {
-      endpoints: [{
-        name: "ClinicaVoiceAPI",
-        endpoint: requiredConfig.apiEndpoint,
-        region: requiredConfig.region,
-      }],
+      REST: {
+        ClinicaVoiceAPI: {
+          endpoint: requiredConfig.apiEndpoint,
+          region: requiredConfig.region,
+        }
+      }
     },
     Storage: {
       S3: {
