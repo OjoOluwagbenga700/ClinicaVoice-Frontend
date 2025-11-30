@@ -136,12 +136,17 @@ export async function uploadFile(file, onProgress) {
  */
 export async function checkTranscriptionStatus(fileId) {
   try {
+    // Get authentication session
+    const { fetchAuthSession } = await import('aws-amplify/auth');
+    const session = await fetchAuthSession();
+    
     const response = await post({
       apiName: "ClinicaVoiceAPI",
       path: `/transcribe/${fileId}`,
       options: {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.tokens.idToken.toString()}`
         }
       }
     }).response;
