@@ -190,6 +190,25 @@ resource "aws_iam_role_policy" "authenticated_user_s3" {
     ]
   })
 }
+
+# Policy for authenticated users to invoke API Gateway
+resource "aws_iam_role_policy" "authenticated_user_api" {
+  name = "${var.project_name}-authenticated-user-api-${var.environment}"
+  role = aws_iam_role.authenticated_user.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "execute-api:Invoke"
+        ]
+        Resource = "${aws_api_gateway_rest_api.main.execution_arn}/*"
+      }
+    ]
+  })
+}
 # Comprehend Medical Access Policy for Lambda
 resource "aws_iam_role_policy" "lambda_comprehend_medical" {
   name = "${var.project_name}-lambda-comprehend-medical-${var.environment}"
