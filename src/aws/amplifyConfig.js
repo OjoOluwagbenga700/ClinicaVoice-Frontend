@@ -69,8 +69,8 @@ Amplify.configure(awsConfig);
 // Log configuration (sanitized for production)
 const logConfig = sanitizeForLogging({
   environment: import.meta.env.MODE,
-  apiEndpoint: awsConfig.API.endpoints[0].endpoint,
-  region: awsConfig.API.endpoints[0].region,
+  apiEndpoint: awsConfig.API.REST.ClinicaVoiceAPI.endpoint,
+  region: awsConfig.API.REST.ClinicaVoiceAPI.region,
   userPoolId: awsConfig.Auth.Cognito.userPoolId,
   bucket: awsConfig.Storage.S3.bucket
 });
