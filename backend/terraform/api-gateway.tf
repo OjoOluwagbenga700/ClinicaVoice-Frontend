@@ -112,6 +112,13 @@ locals {
       authorization   = "COGNITO_USER_POOLS"
       require_api_key = false
     }
+    "transcribe/{id}-post" = {
+      path            = "transcribe/{id}"
+      http_method     = "POST"
+      lambda_function = "transcribe"
+      authorization   = "COGNITO_USER_POOLS"
+      require_api_key = false
+    }
     
     # Upload endpoint for presigned URLs
     "upload/presign" = {
@@ -241,6 +248,7 @@ locals {
     "transcribe"             = aws_api_gateway_resource.transcribe.id
     "transcribe-post"        = aws_api_gateway_resource.transcribe.id
     "transcribe/{id}"        = aws_api_gateway_resource.transcribe_id.id
+    "transcribe/{id}-post"   = aws_api_gateway_resource.transcribe_id.id
     "upload/presign"         = aws_api_gateway_resource.upload_presign.id
   }
 }
