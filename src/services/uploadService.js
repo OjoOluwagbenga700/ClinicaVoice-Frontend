@@ -34,6 +34,9 @@ export async function getPresignedUploadUrl(file) {
           fileName: file.name,
           fileType: file.type,
           fileSize: file.size
+        },
+        headers: {
+          Authorization: `Bearer ${session.tokens.idToken.toString()}`
         }
       }
     });
