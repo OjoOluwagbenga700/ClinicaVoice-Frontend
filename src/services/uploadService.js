@@ -11,6 +11,12 @@ import { post } from 'aws-amplify/api';
  */
 export async function getPresignedUploadUrl(file) {
   try {
+    console.log('🔍 Requesting presigned URL for:', {
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size
+    });
+
     const response = await post({
       apiName: "ClinicaVoiceAPI",
       path: "/upload/presign",
@@ -23,11 +29,18 @@ export async function getPresignedUploadUrl(file) {
       }
     }).response;
 
+    console.log('✅ Response received:', response.status);
     const data = await response.body.json();
+    console.log('✅ Presigned URL data:', { ...data, uploadUrl: '***' }); // Hide URL for security
     return data;
   } catch (error) {
-    console.error('Error getting presigned URL:', error);
-    throw new Error('Failed to get upload URL');
+    console.error('❌ Error getting presigned URL:', error);
+    console.error('❌ Error details:', {
+      message: error.message,
+      response: error.response,
+      status: error.$metadata?.httpStatusCode
+    });
+    throw new Error(`Failed to get upload URL: ${error.message}`);
   }
 }
 

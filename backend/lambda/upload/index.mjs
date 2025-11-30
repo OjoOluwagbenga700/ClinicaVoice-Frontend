@@ -13,11 +13,13 @@ export const handler = async (event) => {
     const userId = event.requestContext.authorizer.claims.sub;
     const userType = event.requestContext.authorizer.claims['custom:user_type'];
     
-    if (userType !== 'clinician') {
+    // Allow both clinicians and patients to upload
+    // Clinicians upload for transcription, patients might upload for their own records
+    if (!userType || (userType !== 'clinician' && userType !== 'patient')) {
       return {
         statusCode: 403,
         headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Only clinicians can upload audio files' })
+        body: JSON.stringify({ error: 'Invalid user type. Please contact support.' })
       };
     }
     
